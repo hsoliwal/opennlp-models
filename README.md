@@ -87,7 +87,7 @@ We provide **Tokenizer**, **Sentence Detector** and **Part-of-Speech Tagger** mo
 These models are compatible with OpenNLP `>= 1.0.0`. Further details are available at the [OpenNLP Models](https://opennlp.apache.org/models.html) 
 page and in the [CHANGELOG](https://dist.apache.org/repos/dist/release/opennlp/models/ud-models-1.3/CHANGES).
 
-In addition, we provide a **Language Detector**, which is able to detect 103 languages in ISO 693-3 standard. 
+In addition, we provide a **Language Detector**, which is able to detect 103 languages in ISO 639-3 standard.
 Works well with longer texts that have at least 2 sentences or more from the same language. 
 
 It is compatible with OpenNLP `>= 1.8.3`. Model details are available [here](https://downloads.apache.org/opennlp/models/langdetect/1.8.3/).
@@ -138,10 +138,47 @@ compile group: "org.apache.opennlp", name: "opennlp-models-langdetect", version:
 For more details please check our [documentation](https://opennlp.apache.org/docs/)
 
 
+### Building model artifacts versus training
+
+The [root POM](pom.xml) requires JDK 17 or later and Maven 3.6.3 or later.
+From the repository root, build and run the configured verification steps with:
+
+```sh
+mvn clean verify
+```
+
+This packages existing model binaries; it does not run `ud-train.sh` or train
+new models. Model modules activate the download plugin during
+`generate-resources`, download to their `target/models` directories, verify the
+configured `model.sha256`, and add that directory as a resource for packaging.
+For examples of the actual download coordinates, see the
+[English tokenizer POM](opennlp-models-tokenizer/opennlp-models-tokenizer-en/pom.xml)
+and [language detector POM](opennlp-models-langdetect/pom.xml).
+A fresh build needs network access to dependency repositories and model hosts.
+
+The [model test module](opennlp-models-test/pom.xml) invokes `ModelValidator`
+during `verify`. The current [validator implementation](opennlp-models-test/src/main/java/org/apache/opennlp/ModelValidator.java)
+compares the expected model count with the discovered model JAR count, then
+returns after the first matching expected model. A successful run therefore
+does not establish that every listed model is present in the generated JARs.
+These are packaging checks, not accuracy evaluations or a substitute for
+evaluating models on your own data. Checksum verification
+likewise checks the expected binary content, not model quality.
+
+Keep the repository's [LICENSE](LICENSE) and [NOTICE](NOTICE) with applicable
+distributions. Before downloading training treebanks or redistributing trained
+models, also inspect the terms and attribution supplied with each selected
+corpus and model; the repository license alone is not evidence of permission
+for every external dataset.
+
 ### Training Models
 
 All released _sentence detection_, _tokenization_, _lemmatizer_, and _POS tagging_ models were and can be trained via the `ud-train.sh` script.
-It is located in the _opennlp-models-training-ud_ directory in this repository. 
+Its source is
+[`opennlp-models-training/opennlp-models-training-ud/src/main/resources/ud-train.sh`](opennlp-models-training/opennlp-models-training-ud/src/main/resources/ud-train.sh).
+The relative paths in the script assume the prepared training working directory;
+check `TRAIN_HOME`, `OPENNLP_HOME`, `UD_HOME`, and the adjacent configuration
+before invoking it.
 
 #### Preparing the environment
 
