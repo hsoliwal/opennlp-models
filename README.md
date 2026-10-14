@@ -209,3 +209,8 @@ The corresponding value must be set or updated correctly for each model type and
 The Apache OpenNLP project is developed by volunteers and is always looking for new contributors to work on all parts of the project. Every contribution is welcome and needed to make it better. A contribution can be anything from a small documentation typo fix to a new component.
 
 If you would like to get involved please follow the instructions [here](https://github.com/apache/opennlp/blob/main/.github/CONTRIBUTING.md)
+
+## Working with this fork
+
+See the [fork guide](FORK_GUIDE.md) and [model artifact inventory](MODEL_INVENTORY.md)
+for the inspected module layout, integration contracts and remaining documentation gaps.
