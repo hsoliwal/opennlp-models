@@ -15,6 +15,78 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<!-- fork-homepage:start -->
+# OpenNLP Models: choose and trace the model behind a result
+
+**Versioned language-model resources for OpenNLP tokenization, sentence detection, POS tagging, lemmatization, and language detection.** This is the public `hsoliwal` fork of [apache/opennlp-models](https://github.com/apache/opennlp-models). Use it to find concrete artifacts, understand how downloaded binaries become JAR resources, and keep packaging, training, and linguistic evaluation separate.
+
+## What this repository provides
+
+- **Model artifacts:** language-specific resource JARs grouped by task, plus a language-detection model. The [artifact inventory](MODEL_INVENTORY.md) maps the inspected 145 model-bearing artifacts across 153 POM projects.
+- **Packaging definitions:** URLs, binary filenames, metadata, and SHA-256 values used to download and package existing models.
+- **Training resources:** a UD training script and configuration that need an external OpenNLP CLI and separately obtained treebanks.
+- **A packaging validator:** Java tooling that checks expected resources, with an important early-return limitation explained below.
+
+This fork contributes navigation and source-backed explanations. It does not claim newly trained models, improved accuracy, or an implemented M3 adapter. The inspected artifact version is `1.3.1-SNAPSHOT`; do not assume that this development version is available from Maven Central. Published dependency versions must be selected separately. Original upstream material is retained below.
+
+## Key concepts
+
+| Term | Meaning | Practical consequence |
+| --- | --- | --- |
+| Task / language | What a model predicts and the language it was trained for | Select both; a POS model is not a tokenizer |
+| Model binary | Learned parameters in a `.bin` resource | The OpenNLP runtime must load the correct model type |
+| Resource JAR | Package containing a model and metadata | It supplies data, not a new inference engine |
+| UD treebank | Universal Dependencies annotated language data | Training needs matching corpus conventions and license review |
+| Checksum | Identity/integrity check for downloaded bytes | Matching bytes does not establish prediction quality |
+| Evaluation | Measurements on held-out examples | Report dataset, runtime, model identity, metric, and limits |
+
+## Quick start: package one English tokenizer
+
+Use Java 17+ and Maven 3.6.3+ as specified in the [root POM](pom.xml). Building downloads the declared model binary and Maven dependencies.
+
+```sh
+git clone https://github.com/hsoliwal/opennlp-models.git
+cd opennlp-models
+git rev-parse HEAD
+java -version
+mvn -version
+mvn -pl opennlp-models-tokenizer/opennlp-models-tokenizer-en -am package
+```
+
+This focuses on one artifact and its reactor prerequisites. It does not train a new model or run the full repository validation. The [English tokenizer POM](opennlp-models-tokenizer/opennlp-models-tokenizer-en/pom.xml) identifies the model resource as `opennlp-en-ud-ewt-tokens-1.3-2.5.4.bin`.
+
+## Worked example: check the package you produced
+
+After the selected build succeeds, inspect the current snapshot's JAR from the checkout root:
+
+```sh
+jar tf opennlp-models-tokenizer/opennlp-models-tokenizer-en/target/opennlp-models-tokenizer-en-1.3.1-SNAPSHOT.jar
+```
+
+Look for the declared `.bin` resource and `model.properties`. If the project version changes, use the JAR actually produced under that module's `target` directory. This inspection answers “was the expected resource packaged?” To answer “does it tokenize my data well?”, load it using the matching runtime and evaluate representative labeled examples. Those are separate steps, not results established by this documentation update.
+
+## Compact cheat sheet
+
+| Goal | Command / source |
+| --- | --- |
+| Package the complete reactor | `mvn clean package` |
+| Reach configured packaging verification | `mvn clean verify` |
+| Select a concrete task/language | [Model artifact inventory](MODEL_INVENTORY.md) |
+| Review the expected resources | [expected-models.txt](opennlp-models-test/src/main/resources/expected-models.txt) |
+| Syntax-check training script without training | `bash -n opennlp-models-training/opennlp-models-training-ud/src/main/resources/ud-train.sh` |
+| Review training settings | [ud-train.conf](opennlp-models-training/opennlp-models-training-ud/src/main/resources/ud-train.conf) |
+| Check a local edit | `git diff --check` |
+
+**Validation caveat:** [ModelValidator](opennlp-models-test/src/main/java/org/apache/opennlp/ModelValidator.java) compares artifact counts but returns from `main` after its first successful expected-resource match. A successful invocation must not be represented as exhaustive validation of every binary. Packaging validation also does not load models or measure linguistic accuracy.
+
+If a download fails or its checksum differs, check the exact leaf POM and resource URL before changing the expected hash. If training cannot find its inputs, inspect the script's `OPENNLP_HOME` and `UD_HOME`: training resources live under `opennlp-models-training/opennlp-models-training-ud/src/main/resources/`, and require the external tools/data named there. No download, build, training, inference, or evaluation was executed for this homepage update.
+
+**Go deeper:** [packaging, training, and API guide](FORK_GUIDE.md) · [complete model inventory](MODEL_INVENTORY.md) · [training script](opennlp-models-training/opennlp-models-training-ud/src/main/resources/ud-train.sh) · [license](LICENSE) · [notices](NOTICE).
+
+## Preserved upstream project documentation
+
+<!-- fork-homepage:end -->
+
 Welcome to Apache OpenNLP Models!
 ===========
 
